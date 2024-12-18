@@ -12,6 +12,7 @@ import {
   productRouter,
   unitRouter,
 } from "./routes/";
+import saleRouter from "./routes/saleRoute";
 
 require("dotenv").config(); // Load environment variables from a .env file into process.env
 const cors = require("cors"); // Import the CORS middleware
@@ -34,6 +35,7 @@ app.use("/api/v1", brandRouter);
 app.use("/api/v1", categoryRouter);
 app.use("/api/v1", customerRouter);
 app.use("/api/v1", productRouter);
+app.use("/api/v1", saleRouter);
 app.use("/api/v1", shopRouter);
 app.use("/api/v1", supplierRouter);
 app.use("/api/v1", unitRouter);
