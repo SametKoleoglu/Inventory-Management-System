@@ -22,9 +22,9 @@ model Customer {
   gender             Gender
   country            String
   location           String
-  maxCreditLimit     Float
-  maxCreditDays      Int
-  unpaidCreditAmount Int          @default(0)
+  maxCreditLimit     Float        // Amount of Credit a Customer can borrow
+  maxCreditDays      Int          // Amount of days the customer have to pay the credit
+  unpaidCreditAmount Int          @default(0) // Outstanding Credit
   taxPin             String?
   dob                DateTime?
   email              String?      @unique
@@ -42,20 +42,22 @@ enum CustomerType {
 }
 
 model User {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  email     String    @unique
-  username  String    @unique
-  password  String
-  firstName String
-  lastName  String
-  phone     String    @unique
-  dob       DateTime?
-  gender    Gender
-  image     String?
-  role      Role      @default(ATTENDANT)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  shops     Shop[]
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  email            String    @unique
+  username         String    @unique
+  password         String
+  firstName        String
+  lastName         String
+  phone            String    @unique
+  dob              DateTime?
+  gender           Gender
+  image            String?
+  role             Role      @default(ATTENDANT)
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  shops            Shop[]
 }
 
 enum Gender {
@@ -78,6 +80,7 @@ model Shop {
   adminId      String    @db.ObjectId
   admin        User      @relation(fields: [adminId], references: [id])
   products     Product[]
+  sales        Sale[]
   attendantIds String[]  @db.ObjectId
 }
 
@@ -188,14 +191,16 @@ model Sale {
   customerName    String?
   saleNumber      String         @unique
   customerEmail   String?
-  saleAmount      Int
-  balanceAmount   Int?           @default(0)
-  paidAmount      Int
-  saleType        SaleType       @default(PAID)
+  saleAmount      Int            //This the Amount from the saleItems
+  balanceAmount   Int?           @default(0) //The diff btn the saleAmount & paid Amount
+  paidAmount      Int            //This is the Amount the Customer have paid
+  saleType        SaleType       @default(PAID) 
   paymentMethod   PaymentMethod? @default(CASH)
   transactionCode String?
 
   // RELATION
+  shopId    String     @db.ObjectId
+  shop      Shop       @relation(fields: [shopId], references: [id])
   saleItems SaleItem[]
   customer  Customer   @relation(fields: [customerId], references: [id])
   createdAt DateTime   @default(now())

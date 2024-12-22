@@ -11,6 +11,7 @@ export interface SaleRequestBody {
   paymentMethod: PaymentMethod;
   transactionCode: string;
   saleItems: SaleItem[];
+  shopId: string;
 }
 
 export interface SaleItem {
