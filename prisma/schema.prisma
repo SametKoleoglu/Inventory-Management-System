@@ -22,8 +22,8 @@ model Customer {
   gender             Gender
   country            String
   location           String
-  maxCreditLimit     Float        // Amount of Credit a Customer can borrow
-  maxCreditDays      Int          // Amount of days the customer have to pay the credit
+  maxCreditLimit     Float // Amount of Credit a Customer can borrow
+  maxCreditDays      Int // Amount of days the customer have to pay the credit
   unpaidCreditAmount Int          @default(0) // Outstanding Credit
   taxPin             String?
   dob                DateTime?
@@ -81,6 +81,7 @@ model Shop {
   admin        User      @relation(fields: [adminId], references: [id])
   products     Product[]
   sales        Sale[]
+  expenses     Expense[]
   attendantIds String[]  @db.ObjectId
 }
 
@@ -191,10 +192,10 @@ model Sale {
   customerName    String?
   saleNumber      String         @unique
   customerEmail   String?
-  saleAmount      Int            //This the Amount from the saleItems
+  saleAmount      Int //This the Amount from the saleItems
   balanceAmount   Int?           @default(0) //The diff btn the saleAmount & paid Amount
-  paidAmount      Int            //This is the Amount the Customer have paid
-  saleType        SaleType       @default(PAID) 
+  paidAmount      Int //This is the Amount the Customer have paid
+  saleType        SaleType       @default(PAID)
   paymentMethod   PaymentMethod? @default(CASH)
   transactionCode String?
 
@@ -219,4 +220,42 @@ model SaleItem {
   updatedAt    DateTime @updatedAt
   product      Product  @relation(fields: [productId], references: [id])
   sale         Sale     @relation(fields: [saleId], references: [id])
+}
+
+model Payee {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  phone    String    @unique
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseCategory {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  slug     String    @unique
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  amount      Int
+  description String?
+  attachments String[]
+  expenseDate DateTime        @default(now())
+  payeeId     String          @db.ObjectId
+  payee       Payee           @relation(fields: [payeeId], references: [id])
+  categoryId  String          @db.ObjectId
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  shopId      String          @db.ObjectId
+  shop        Shop            @relation(fields: [shopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,6 +1,7 @@
 import { db } from "@/db/db";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import { isValidObjectId } from "@/utils/isValidObjectId";
 
 export async function getUsers(req: Request, res: Response) {
   try {
@@ -208,8 +209,11 @@ export async function updateUser(req: Request, res: Response) {
 
 export async function updateUserPassword(req: Request, res: Response) {
   const { id } = req.params;
-  const { password } = req.body;
+  const { oldPassword, newPassword } = req.body;
   try {
+    if (isValidObjectId(id) === false) {
+      return res.status(404).json({ message: "Invalid ID" });
+    }
     const user = await db.user.findUnique({
       where: {
         id: id,
@@ -218,7 +222,13 @@ export async function updateUserPassword(req: Request, res: Response) {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const hashedPassword: string = await bcrypt.hash(password, 10);
+
+    // Check if the old password matches
+    const matchPassword = await bcrypt.compare(oldPassword, user.password);
+    if (!matchPassword)
+      return res.status(403).json({ message: "Wrong password", data: null });
+
+    const hashedPassword: string = await bcrypt.hash(newPassword, 10);
     const updatedUser = await db.user.update({
       where: {
         id: id,
